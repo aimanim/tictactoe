@@ -1,0 +1,492 @@
+Include Irvine32.inc
+.Data
+	msg1 byte "Tic Tac Toe Game",0
+	msg2 byte "Player 1 (X)  -  Player 2 (O)",0
+	msgv2 byte "Player 1 (X)  -  Player 2: Computer (O)",0
+	msg3 byte "Player ",0
+	msg4 byte "...Enter a number.... : ",0
+	prompt1 byte "Invalid move...!",0
+	prompt2 byte " is Winner...!",0
+	prompt3 byte "Game Draw...!",0
+	Space byte "                                              ",0
+	player dword 1
+	mark dword ?
+	comp dword 2
+	choice dword ?
+	A dword 'X'
+	B dword 'O'
+	check sdword ?
+	square dword 49,50,51,52,53,54,55,56,57
+	square2 dword 49,50,51,52,53,54,55,56,57
+	line1 byte "|  ",0
+	line2 byte "|___|___|___|",0
+	line3 byte "_____________",0
+	X byte 0
+	Y byte 0
+
+		choice1 BYTE " TIC TAC TOE GAME  ",0
+		choice2 BYTE " 1) Play 2 player game ",0
+		choice3 BYTE " 2) Play against computer ",0
+		choice4 BYTE " 3) Exit ",0
+		choice5 BYTE " Enter a choice: ",0
+
+.Code
+Main Proc
+	Gameplay:
+		mov eax, White+(Black*16)
+		call settextcolor 
+		Call Clrscr
+		mov dh, 9
+		mov dl, 40
+		call gotoxy
+		Mov Edx, offset choice1
+		Call WriteString
+		mov dh, 11
+		mov dl, 35
+		call gotoxy
+		mov edx, offset choice2
+		call writestring
+		mov dh, 12
+		mov dl, 35
+		call gotoxy
+		mov edx, offset choice3
+		call writestring
+		mov dh, 13
+		mov dl, 35
+		call gotoxy
+		mov edx, offset choice4
+		call writestring
+		mov dh, 14
+		mov dl, 35
+		call gotoxy
+		mov edx, offset choice5
+		call writestring
+
+		_Choice_:
+		CALL readdec
+		mov comp, eax
+
+		cmp eax, 1
+		JE L1
+
+		cmp eax, 2
+		je L1
+
+		CMP Eax, 3
+		JE L2
+
+	JMP _Choice_
+
+	L1:
+		mov eax, red + (lightgray * 16)
+		call settextcolor
+		call TICTACTOE
+		Call Readchar
+		JMP Gameplay
+
+	L2:
+		Exit
+
+Main Endp
+
+
+;********************************** BOARD PROC ***********************************
+board proc
+	mov dl, 0
+	mov dh, 19
+	call gotoxy
+	mov edx,OFFSET Space
+	call writestring
+	Call crlf
+	call writestring
+
+	mov X, 55
+	mov Y, 5
+	mov dl, X
+	mov dh, Y
+	call gotoxy
+	mov edx,offset msg1
+	call writestring
+	call crlf
+	sub X, 5
+	inc Y
+	mov dl, X
+	mov dh, Y
+	call gotoxy
+	cmp comp, 1
+	je twoplayer
+	mov edx, offset msgv2
+	jmp n
+	twoplayer: mov edx,offset msg2
+	n: call writestring
+	call crlf
+	mov esi,offset square
+	mov ecx,3
+	add X, 7
+	add Y, 3
+	mov dl, X
+	mov dh, Y
+	call gotoxy
+	mov edx,offset line3
+	call writestring
+	call crlf
+	lable1:
+	inc Y
+	mov dl, X
+	mov dh, Y
+	call gotoxy
+	mov edx,offset line1
+	call writestring
+	mov eax,[esi]
+	call writechar
+	add esi,type square
+	push ecx
+	mov ecx,2
+	lable2:
+	mov edx,offset line1
+	call writestring
+	mov eax,[esi]
+	call writechar
+	add esi,type square
+	loop lable2
+	mov edx,offset line1
+	call writestring
+	call crlf
+	inc Y
+	mov dl, X
+	mov dh, Y
+	call gotoxy
+	mov edx, offset line2
+	call writestring
+	call crlf
+	pop ecx
+	dec ecx
+	cmp ecx, 0
+	ja lable1
+	call crlf
+	call crlf
+	call crlf
+ret
+board endp
+;**********************************BOARD PROC END***********************************
+
+
+;**********************************Winner PROC***********************************
+winner proc
+	enter 0, 0
+	lable1:
+		mov esi, [ebp+12]
+		mov edi, [ebp+8]
+
+		mov eax,[esi]
+		mov ebx,[esi+4]
+		mov ecx,[esi+8]
+		cmp eax,ebx
+		jne lable3
+		cmp ebx,ecx
+		jne lable3
+		mov check,1
+		jmp return
+
+	lable3:
+		mov eax,[esi+12]
+		mov ebx,[esi+16]
+		mov ecx,[esi+20]
+		cmp eax,ebx
+		jne lable4
+		cmp ebx,ecx
+		jne lable4
+		mov check,1
+		jmp return
+
+	lable4:
+		mov eax,[esi+24]
+		mov ebx,[esi+28]
+		mov ecx,[esi+32]
+		cmp eax,ebx
+		jne lable5
+		cmp ebx,ecx
+		jne lable5
+		mov check,1
+		jmp return
+
+	lable5:
+		mov eax,[esi]
+		mov ebx,[esi+12]
+		mov ecx,[esi+24]
+		cmp eax,ebx
+		jne lable6
+		cmp ebx,ecx
+		jne lable6
+		mov check,1
+		jmp return
+
+	lable6:
+		mov eax,[esi+4]
+		mov ebx,[esi+16]
+		mov ecx,[esi+28]
+		cmp eax,ebx
+		jne lable7
+		cmp ebx,ecx
+		jne lable7
+		mov check,1
+		jmp return
+
+	lable7:
+		mov eax,[esi+8]
+		mov ebx,[esi+20]
+		mov ecx,[esi+32]
+		cmp eax,ebx
+		jne lable8
+		cmp ebx,ecx
+		jne lable8
+		mov check,1
+		jmp return
+
+	lable8:
+		mov eax,[esi]
+		mov ebx,[esi+16]
+		mov ecx,[esi+32]
+		cmp eax,ebx
+		jne lable9
+		cmp ebx,ecx
+		jne lable9
+		mov check,1
+		jmp return
+
+	lable9:
+		mov eax,[esi+8]
+		mov ebx,[esi+16]
+		mov ecx,[esi+24]
+		cmp eax,ebx
+		jne lable10
+		cmp ebx,ecx
+		jne lable10
+		mov check,1
+		jmp return
+
+	lable10:
+		mov eax,[edi]
+		cmp [esi],eax
+		je lable11
+		add esi,type square
+		add edi,type square2
+		mov eax,[edi]
+		cmp [esi],eax
+		je lable11
+		add esi,type square
+		add edi,type square2
+		mov eax,[edi]
+		cmp [esi],eax
+		je lable11
+		add esi,type square
+		add edi,type square2
+		mov eax,[edi]
+		cmp [esi],eax
+		je lable11
+		add esi,type square
+		add edi,type square2
+		mov eax,[edi]
+		cmp [esi],eax
+		je lable11
+		add esi,type square
+		add edi,type square2
+		mov eax,[edi]
+		cmp [esi],eax
+		je lable11
+		add esi,type square
+		add edi,type square2
+		mov eax,[edi]
+		cmp [esi],eax
+		je lable11
+		add esi,type square
+		add edi,type square2
+		mov eax,[edi]
+		cmp [esi],eax
+		je lable11
+		add esi,type square
+		add edi,type square2
+		mov eax,[edi]
+		cmp [esi],eax
+		je lable11
+		mov check,0
+		jmp return
+
+	lable11 :
+		mov check,-1
+
+	return:
+		leave
+
+ret 8
+winner endp
+;**********************************Winner PROC END***********************************
+
+;**********************************TICTACTOE PROC ***************************************
+TICTACTOE proc
+	enter 0,0
+	Call Clrscr
+	do:
+		Mov DH, 0;row
+		Mov DL, 1;colomn			printing board; 
+		Call Gotoxy
+		invoke board
+
+		mov edx,0
+		mov eax,player
+		mov ebx,2
+		div ebx
+
+		cmp edx,1
+		je _1player_
+
+		mov player,2
+		jmp g
+
+		_1player_:
+		mov player,1
+
+	g:
+		cmp comp,1
+		je go
+
+	goc:
+		cmp player, 1
+		jne go2
+		mov edx,offset msg3
+		call writestring
+
+		mov eax,player
+		call writedec
+
+		mov edx,offset msg4
+		call writestring
+		call readdec		; Taking input
+		mov choice,eax
+		jmp go3
+
+	go2:
+		call randomize
+		mov eax, 9
+		call randomrange
+		inc eax
+		mov choice, eax
+		jmp go3
+
+	go:
+		mov edx,offset msg3
+		call writestring
+
+		mov eax,player
+		call writedec
+
+		mov edx,offset msg4
+		call writestring
+		call readdec		; Taking input
+		mov choice,eax
+	go3:
+		mov eax,player
+		cmp eax,1
+		jne notequal
+
+		mov eax,A
+		mov mark,eax
+		jmp label1
+
+	notequal:
+		mov eax,B
+		mov mark,eax
+
+	label1:
+		mov eax,choice
+		mov ebx,1
+		mov esi,offset square
+		mov edi,offset square2
+		mov ecx,lengthof square
+
+	lable2:
+		push ecx
+		cmp eax,ebx
+		je lable3
+		jmp lable4
+
+	lable3:
+		Pop Ecx
+		mov eax, [esi]
+		cmp eax, [edi]
+		jne lable5
+		mov eax,mark
+		mov [esi],eax
+		jmp lable6
+
+	lable4:
+		pop ecx
+		inc ebx
+		add esi,type square
+		add edi,type square2
+		loop lable2
+
+	lable5:
+		dec player
+		cmp comp, 2
+		jne newmove
+		mov eax, 9
+		call randomrange
+		inc eax
+		jmp n
+		newmove:
+		mov edx, offset prompt1
+		call writestring
+		call readchar
+		n:
+		call BOARD
+
+	lable6:
+		push offset square
+		push offset square2
+		invoke winner
+
+		inc player
+		mov eax,check
+		mov ebx,-1
+		cmp eax,ebx
+		je do
+
+		Mov DH, 0;row
+		Mov DL, 1;colomn
+		Call Gotoxy
+		invoke board
+
+		mov eax,check
+		cmp eax,1
+		je _wins_
+
+		mov edx, offset prompt3
+		call writestring
+		call crlf
+		jmp ex
+
+	_wins_:
+		mov edx,offset msg3
+		call writestring
+		dec player
+		mov eax,player
+		call writedec
+		mov edx,offset prompt2
+		call writestring
+		call crlf
+
+	ex:
+		Mov Player, 1
+
+		cld
+		Mov Ecx, LENGTHOF Square
+		Mov Edi, OFFSET Square
+		Mov Esi, OFFSET Square2
+		REP MOVSD
+
+		leave
+ret
+TICTACTOE endp
+;**********************************TICTACTOE PROC END*****************************************
+End Main
